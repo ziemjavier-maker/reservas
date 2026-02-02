@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Reservas de Salas de Video</title>
+
+<!-- Firebase COMPAT -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f2f2f2;
+  margin: 0;
+}
+header {
+  background: #222;
+  color: white;
+  padding: 10px;
+  text-align: center;
+}
+.container {
+  max-width: 600px;
+  margin: auto;
+  padding: 15px;
+}
+.card {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+input, select, button {
+  width: 100%;
+  padding: 8px;
+  margin-top: 8px;
+}
+button {
+  background: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+button:hover {
+  background: #0056b3;
+}
+.ok { color: green; font-weight: bold; }
+.ocupado { color: red; font-weight: bold; }
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>Reservas de Salas de Video</h2>
+</header>
+
+<div class="container">
+
+  <!-- RESERVAR -->
+  <div class="card">
+    <h3>Reservar Sala</h3>
+    <input type="text" id="docente" placeholder="Nombre del docente">
+    <input type="date" id="fecha">
+    <select id="sala">
+      <option value="Sala 1">Sala de Video 1</option>
+      <option value="Sala 2">Sala de Video 2</option>
+    </select>
+    <select id="horario"></select>
+    <button onclick="reservar()">Guardar Reserva</button>
+    <div id="reservaInfo"></div>
+  </div>
+
+  <!-- DISPONIBILIDAD -->
+  <div class="card">
+    <h3>Disponibilidad de la Sala</h3>
+    <input type="date" id="fechaConsulta">
+    <select id="salaConsulta">
+      <option value="Sala 1">Sala de Video 1</option>
+      <option value="Sala 2">Sala de Video 2</option>
+    </select>
+    <button onclick="mostrarDisponibilidad()">Ver Ocupación</button>
+    <div id="consultaInfo"></div>
+  </div>
+
+</div>
+
+<script>
+// ================= FIREBASE CONFIG =================
+const firebaseConfig = {
+  apiKey: "AIzaSyCM3EhC_h9edEUCqnFgv-3Leh-Dk3ybj0E",
+  authDomain: "salas-de-video.firebaseapp.com",
+  projectId: "salas-de-video",
+  storageBucket: "salas-de-video.firebasestorage.app",
+  messagingSenderId: "927749215007",
+  appId: "1:927749215007:web:f7f7c13d932cb1ca23162a"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ================= HORARIOS =================
+const horarios = [
+  "07:15","07:55","08:35","08:45","09:25","10:05",
+  "10:20","10:55","11:35","11:40","12:20","13:00",
+  "13:15","14:35","14:45","16:05","16:15","17:35",
+  "17:40","19:00","19:30","20:05","20:40","20:50",
+  "21:25","22:00","22:05","22:40","23:15"
+];
+
+function cargarHorarios() {
+  const h = document.getElementById("horario");
+  h.innerHTML = "";
+  horarios.forEach(x => {
+    let o = document.createElement("option");
+    o.value = x;
+    o.textContent = x;
+    h.appendChild(o);
+  });
+}
+cargarHorarios();
+
+// ================= VALIDAR LUNES A VIERNES =================
+function esDiaValido(fecha) {
+  const d = new Date(fecha).getDay();
+  return d >= 1 && d <= 5;
+}
+
+// ================= RESERVAR =================
+async function reservar() {
+  const docente = document.getElementById("docente").value.trim();
+  const fecha = document.getElementById("fecha").value;
+  const sala = document.getElementById("sala").value;
+  const horario = document.getElementById("horario").value;
+  const info = document.getElementById("reservaInfo");
+
+  if (!docente || !fecha || !sala || !horario) {
+    info.innerHTML = "Complete todos los campos";
+    return;
+  }
+
+  if (!esDiaValido(fecha)) {
+    info.innerHTML = "Solo se permiten reservas de lunes a viernes";
+    return;
+  }
+
+  const id = `${fecha}_${sala}_${horario}`;
+  const ref = db.collection("reservas").doc(id);
+  const snap = await ref.get();
+
+  if (snap.exists) {
+    info.innerHTML = "<span class='ocupado'>Horario ocupado</span>";
+    return;
+  }
+
+  await ref.set({
+    docente: docente,
+    fecha: fecha,
+    sala: sala,
+    horario: horario,
+    creado: new Date().toLocaleString()
+  });
+
+  info.innerHTML = "<span class='ok'>Reserva guardada correctamente</span>";
+}
+
+// ================= MOSTRAR DISPONIBILIDAD =================
+async function mostrarDisponibilidad() {
+  const fecha = document.getElementById("fechaConsulta").value;
+  const sala = document.getElementById("salaConsulta").value;
+  const info = document.getElementById("consultaInfo");
+
+  if (!fecha) {
+    info.innerHTML = "Seleccione una fecha";
+    return;
+  }
+
+  let html = `<h4>${sala} - ${fecha}</h4>`;
+
+  for (let h of horarios) {
+    const id = `${fecha}_${sala}_${h}`;
+    const ref = db.collection("reservas").doc(id);
+    const snap = await ref.get();
+
+    if (snap.exists) {
+      const r = snap.data();
+      html += `<p class="ocupado">${h} - OCUPADO (${r.docente})</p>`;
+    } else {
+      html += `<p class="ok">${h} - LIBRE</p>`;
+    }
+  }
+
+  info.innerHTML = html;
+}
+</script>
+
+</body>
+</html>
