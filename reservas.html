@@ -2,10 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-
-<!-- CLAVE PARA CELULAR -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Reservas de Salas de Video</title>
 
 <!-- Firebase COMPAT -->
@@ -19,25 +16,21 @@ body {
   margin: 0;
   font-size: 18px;
 }
-
 header {
   background: #222;
   color: white;
   padding: 20px;
   text-align: center;
 }
-
 header h2 {
   font-size: 28px;
   margin: 0;
 }
-
 .container {
   max-width: 700px;
   margin: auto;
   padding: 20px;
 }
-
 .card {
   background: white;
   padding: 20px;
@@ -45,13 +38,11 @@ header h2 {
   margin-bottom: 20px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
-
 h3 {
   font-size: 24px;
   margin-bottom: 15px;
   text-align: center;
 }
-
 input, select, button {
   width: 100%;
   padding: 14px;
@@ -60,7 +51,6 @@ input, select, button {
   border-radius: 8px;
   border: 1px solid #ccc;
 }
-
 button {
   background: #007bff;
   color: white;
@@ -70,36 +60,22 @@ button {
   font-weight: bold;
   padding: 16px;
 }
-
 button:hover {
   background: #0056b3;
 }
-
 .ok {
   color: green;
   font-weight: bold;
   font-size: 18px;
 }
-
 .ocupado {
   color: red;
   font-weight: bold;
   font-size: 18px;
 }
-
 #consultaInfo p {
   padding: 8px;
   border-bottom: 1px solid #ddd;
-}
-
-/* EXTRA PARA PANTALLAS CHICAS */
-@media (max-width: 480px) {
-  header h2 {
-    font-size: 24px;
-  }
-  h3 {
-    font-size: 22px;
-  }
 }
 </style>
 </head>
@@ -218,17 +194,17 @@ async function reservar() {
   }
 
   await ref.set({
-    docente: docente,
-    fecha: fecha,
-    sala: sala,
-    horario: horario,
+    docente,
+    fecha,
+    sala,
+    horario,
     creado: new Date().toLocaleString()
   });
 
   info.innerHTML = "<span class='ok'>✅ Reserva guardada correctamente</span>";
 }
 
-// ================= MOSTRAR DISPONIBILIDAD =================
+// ================= MOSTRAR DISPONIBILIDAD OPTIMIZADO =================
 async function mostrarDisponibilidad() {
   const fecha = document.getElementById("fechaConsulta").value;
   const sala = document.getElementById("salaConsulta").value;
@@ -239,16 +215,26 @@ async function mostrarDisponibilidad() {
     return;
   }
 
+  info.innerHTML = "⏳ Cargando disponibilidad...";
+
+  // Trae TODAS las reservas del día y sala en una sola consulta
+  const query = await db.collection("reservas")
+    .where("fecha", "==", fecha)
+    .where("sala", "==", sala)
+    .get();
+
+  // Guarda ocupados en memoria
+  const ocupados = {};
+  query.forEach(doc => {
+    const r = doc.data();
+    ocupados[r.horario] = r.docente;
+  });
+
   let html = `<h4>${sala} - ${fecha}</h4>`;
 
   for (let h of horarios) {
-    const id = `${fecha}_${sala}_${h}`;
-    const ref = db.collection("reservas").doc(id);
-    const snap = await ref.get();
-
-    if (snap.exists) {
-      const r = snap.data();
-      html += `<p class="ocupado">${h} - OCUPADO (${r.docente})</p>`;
+    if (ocupados[h]) {
+      html += `<p class="ocupado">${h} - OCUPADO (${ocupados[h]})</p>`;
     } else {
       html += `<p class="ok">${h} - LIBRE</p>`;
     }
