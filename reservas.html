@@ -2,6 +2,10 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+
+<!-- CLAVE PARA CELULAR -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Reservas de Salas de Video</title>
 
 <!-- Firebase COMPAT -->
@@ -13,75 +17,133 @@ body {
   font-family: Arial, sans-serif;
   background: #f2f2f2;
   margin: 0;
+  font-size: 18px;
 }
+
 header {
   background: #222;
   color: white;
-  padding: 10px;
+  padding: 20px;
   text-align: center;
 }
-.container {
-  max-width: 600px;
-  margin: auto;
-  padding: 15px;
+
+header h2 {
+  font-size: 28px;
+  margin: 0;
 }
+
+.container {
+  max-width: 700px;
+  margin: auto;
+  padding: 20px;
+}
+
 .card {
   background: white;
-  padding: 15px;
-  border-radius: 10px;
-  margin-bottom: 15px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  padding: 20px;
+  border-radius: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
+
+h3 {
+  font-size: 24px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
 input, select, button {
   width: 100%;
-  padding: 8px;
-  margin-top: 8px;
+  padding: 14px;
+  margin-top: 12px;
+  font-size: 18px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
 }
+
 button {
   background: #007bff;
   color: white;
   border: none;
   cursor: pointer;
+  font-size: 20px;
+  font-weight: bold;
+  padding: 16px;
 }
+
 button:hover {
   background: #0056b3;
 }
-.ok { color: green; font-weight: bold; }
-.ocupado { color: red; font-weight: bold; }
+
+.ok {
+  color: green;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.ocupado {
+  color: red;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+#consultaInfo p {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+/* EXTRA PARA PANTALLAS CHICAS */
+@media (max-width: 480px) {
+  header h2 {
+    font-size: 24px;
+  }
+  h3 {
+    font-size: 22px;
+  }
+}
 </style>
 </head>
 
 <body>
 
 <header>
-  <h2>Reservas de Salas de Video</h2>
+  <h2>📅 Reservas de Salas de Video</h2>
 </header>
 
 <div class="container">
 
   <!-- RESERVAR -->
   <div class="card">
-    <h3>Reservar Sala</h3>
+    <h3>📝 Reservar Sala</h3>
+
     <input type="text" id="docente" placeholder="Nombre del docente">
     <input type="date" id="fecha">
+
     <select id="sala">
       <option value="Sala 1">Sala de Video 1</option>
       <option value="Sala 2">Sala de Video 2</option>
     </select>
+
     <select id="horario"></select>
+
     <button onclick="reservar()">Guardar Reserva</button>
+
     <div id="reservaInfo"></div>
   </div>
 
   <!-- DISPONIBILIDAD -->
   <div class="card">
-    <h3>Disponibilidad de la Sala</h3>
+    <h3>🔍 Disponibilidad de la Sala</h3>
+
     <input type="date" id="fechaConsulta">
+
     <select id="salaConsulta">
       <option value="Sala 1">Sala de Video 1</option>
       <option value="Sala 2">Sala de Video 2</option>
     </select>
+
     <button onclick="mostrarDisponibilidad()">Ver Ocupación</button>
+
     <div id="consultaInfo"></div>
   </div>
 
@@ -137,12 +199,12 @@ async function reservar() {
   const info = document.getElementById("reservaInfo");
 
   if (!docente || !fecha || !sala || !horario) {
-    info.innerHTML = "Complete todos los campos";
+    info.innerHTML = "⚠️ Complete todos los campos";
     return;
   }
 
   if (!esDiaValido(fecha)) {
-    info.innerHTML = "Solo se permiten reservas de lunes a viernes";
+    info.innerHTML = "⚠️ Solo se permiten reservas de lunes a viernes";
     return;
   }
 
@@ -151,7 +213,7 @@ async function reservar() {
   const snap = await ref.get();
 
   if (snap.exists) {
-    info.innerHTML = "<span class='ocupado'>Horario ocupado</span>";
+    info.innerHTML = "<span class='ocupado'>⛔ Horario ocupado</span>";
     return;
   }
 
@@ -163,7 +225,7 @@ async function reservar() {
     creado: new Date().toLocaleString()
   });
 
-  info.innerHTML = "<span class='ok'>Reserva guardada correctamente</span>";
+  info.innerHTML = "<span class='ok'>✅ Reserva guardada correctamente</span>";
 }
 
 // ================= MOSTRAR DISPONIBILIDAD =================
@@ -173,7 +235,7 @@ async function mostrarDisponibilidad() {
   const info = document.getElementById("consultaInfo");
 
   if (!fecha) {
-    info.innerHTML = "Seleccione una fecha";
+    info.innerHTML = "⚠️ Seleccione una fecha";
     return;
   }
 
