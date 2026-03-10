@@ -5,249 +5,318 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reservas de Salas de Video</title>
 
-<!-- Firebase COMPAT -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background: #f2f2f2;
-  margin: 0;
-  font-size: 18px;
+
+body{
+font-family:Arial;
+background:#f2f2f2;
+margin:0;
+font-size:18px;
 }
-header {
-  background: #222;
-  color: white;
-  padding: 20px;
-  text-align: center;
+
+header{
+background:#222;
+color:white;
+padding:20px;
+text-align:center;
 }
-header h2 {
-  font-size: 28px;
-  margin: 0;
+
+header h2{
+margin:0;
 }
-.container {
-  max-width: 700px;
-  margin: auto;
-  padding: 20px;
+
+.container{
+max-width:700px;
+margin:auto;
+padding:20px;
 }
-.card {
-  background: white;
-  padding: 20px;
-  border-radius: 15px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+
+.card{
+background:white;
+padding:20px;
+border-radius:12px;
+margin-bottom:20px;
+box-shadow:0 3px 8px rgba(0,0,0,0.2);
 }
-h3 {
-  font-size: 24px;
-  margin-bottom: 15px;
-  text-align: center;
+
+input,select,button{
+width:100%;
+padding:14px;
+margin-top:10px;
+font-size:18px;
+border-radius:8px;
+border:1px solid #ccc;
 }
-input, select, button {
-  width: 100%;
-  padding: 14px;
-  margin-top: 12px;
-  font-size: 18px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
+
+button{
+background:#007bff;
+color:white;
+border:none;
+font-weight:bold;
+cursor:pointer;
 }
-button {
-  background: #007bff;
-  color: white;
-  border: none;
-  cursor: pointer;
-  font-size: 20px;
-  font-weight: bold;
-  padding: 16px;
+
+button:hover{
+background:#0056b3;
 }
-button:hover {
-  background: #0056b3;
+
+.ok{
+color:green;
+font-weight:bold;
 }
-.ok {
-  color: green;
-  font-weight: bold;
-  font-size: 18px;
+
+.ocupado{
+color:red;
+font-weight:bold;
 }
-.ocupado {
-  color: red;
-  font-weight: bold;
-  font-size: 18px;
-}
-#consultaInfo p {
-  padding: 8px;
-  border-bottom: 1px solid #ddd;
-}
+
 </style>
 </head>
 
 <body>
 
 <header>
-  <h2>📅 Reservas de Salas de Video</h2>
+<h2>📅 Reservas de Salas de Video</h2>
 </header>
 
 <div class="container">
 
-  <!-- RESERVAR -->
-  <div class="card">
-    <h3>📝 Reservar Sala</h3>
+<div class="card">
 
-    <input type="text" id="docente" placeholder="Nombre del docente">
-    <input type="date" id="fecha">
+<h3>Reservar Sala</h3>
 
-    <select id="sala">
-      <option value="Sala 1">Sala de Video 1</option>
-      <option value="Sala 2">Sala de Video 2</option>
-    </select>
+<input type="text" id="docente" placeholder="Nombre del docente">
 
-    <select id="horario"></select>
+<input type="date" id="fecha">
 
-    <button onclick="reservar()">Guardar Reserva</button>
+<select id="sala">
 
-    <div id="reservaInfo"></div>
-  </div>
+<option value="Sala 1">Sala de Video 1</option>
+<option value="Sala 2">Sala de Video 2</option>
 
-  <!-- DISPONIBILIDAD -->
-  <div class="card">
-    <h3>🔍 Disponibilidad de la Sala</h3>
+</select>
 
-    <input type="date" id="fechaConsulta">
+<select id="horario"></select>
 
-    <select id="salaConsulta">
-      <option value="Sala 1">Sala de Video 1</option>
-      <option value="Sala 2">Sala de Video 2</option>
-    </select>
+<button onclick="reservar()">Guardar Reserva</button>
 
-    <button onclick="mostrarDisponibilidad()">Ver Ocupación</button>
+<div id="reservaInfo"></div>
 
-    <div id="consultaInfo"></div>
-  </div>
+</div>
+
+
+<div class="card">
+
+<h3>Disponibilidad</h3>
+
+<input type="date" id="fechaConsulta">
+
+<select id="salaConsulta">
+
+<option value="Sala 1">Sala de Video 1</option>
+<option value="Sala 2">Sala de Video 2</option>
+
+</select>
+
+<button onclick="mostrarDisponibilidad()">Ver Ocupación</button>
+
+<div id="consultaInfo"></div>
+
+</div>
 
 </div>
 
 <script>
-// ================= FIREBASE CONFIG =================
+
 const firebaseConfig = {
-  apiKey: "AIzaSyCM3EhC_h9edEUCqnFgv-3Leh-Dk3ybj0E",
-  authDomain: "salas-de-video.firebaseapp.com",
-  projectId: "salas-de-video",
-  storageBucket: "salas-de-video.firebasestorage.app",
-  messagingSenderId: "927749215007",
-  appId: "1:927749215007:web:f7f7c13d932cb1ca23162a"
+
+apiKey: "AIzaSyCM3EhC_h9edEUCqnFgv-3Leh-Dk3ybj0E",
+authDomain: "salas-de-video.firebaseapp.com",
+projectId: "salas-de-video",
+storageBucket: "salas-de-video.firebasestorage.app",
+messagingSenderId: "927749215007",
+appId: "1:927749215007:web:f7f7c13d932cb1ca23162a"
+
 };
 
 firebase.initializeApp(firebaseConfig);
+
 const db = firebase.firestore();
 
-// ================= HORARIOS =================
-const horarios = [
-  "07:15","07:55","08:35","08:45","09:25","10:05",
-  "10:20","10:55","11:35","11:40","12:20","13:00",
-  "13:15","14:35","14:45","16:05","16:15","17:35",
-  "17:40","19:00","19:30","20:05","20:40","20:50",
-  "21:25","22:00","22:05","22:40","23:15"
+
+
+const horarios=[
+
+"07:15","07:55","08:35","08:45","09:25","10:05",
+"10:20","10:55","11:35","11:40","12:20","13:00",
+"13:15","14:35","14:45","16:05","16:15","17:35",
+"17:40","19:00","19:30","20:05","20:40","20:50",
+"21:25","22:00","22:05","22:40","23:15"
+
 ];
 
-function cargarHorarios() {
-  const h = document.getElementById("horario");
-  h.innerHTML = "";
-  horarios.forEach(x => {
-    let o = document.createElement("option");
-    o.value = x;
-    o.textContent = x;
-    h.appendChild(o);
-  });
+
+
+function cargarHorarios(){
+
+const select=document.getElementById("horario");
+
+select.innerHTML="";
+
+horarios.forEach(h=>{
+
+const option=document.createElement("option");
+
+option.value=h;
+
+option.textContent=h;
+
+select.appendChild(option);
+
+});
+
 }
+
 cargarHorarios();
 
-// ================= VALIDAR LUNES A VIERNES =================
-function esDiaValido(fecha) {
-  const d = new Date(fecha).getDay();
-  return d >= 1 && d <= 5;
+
+
+
+function esDiaValido(fecha){
+
+const partes=fecha.split("-");
+
+const fechaLocal=new Date(partes[0],partes[1]-1,partes[2]);
+
+const dia=fechaLocal.getDay();
+
+return dia>=1 && dia<=5;
+
 }
 
-// ================= RESERVAR =================
-async function reservar() {
-  const docente = document.getElementById("docente").value.trim();
-  const fecha = document.getElementById("fecha").value;
-  const sala = document.getElementById("sala").value;
-  const horario = document.getElementById("horario").value;
-  const info = document.getElementById("reservaInfo");
 
-  if (!docente || !fecha || !sala || !horario) {
-    info.innerHTML = "⚠️ Complete todos los campos";
-    return;
-  }
 
-  function esDiaValido(fecha) {
+async function reservar(){
 
-  const partes = fecha.split("-");
-  const fechaLocal = new Date(partes[0], partes[1] - 1, partes[2]);
+const docente=document.getElementById("docente").value.trim();
 
-  const d = fechaLocal.getDay();
+const fecha=document.getElementById("fecha").value;
 
-  return d >= 1 && d <= 5;
-}
-  }
+const sala=document.getElementById("sala").value;
 
-  const id = `${fecha}_${sala}_${horario}`;
-  const ref = db.collection("reservas").doc(id);
-  const snap = await ref.get();
+const horario=document.getElementById("horario").value;
 
-  if (snap.exists) {
-    info.innerHTML = "<span class='ocupado'>⛔ Horario ocupado</span>";
-    return;
-  }
+const info=document.getElementById("reservaInfo");
 
-  await ref.set({
-    docente,
-    fecha,
-    sala,
-    horario,
-    creado: new Date().toLocaleString()
-  });
+if(!docente || !fecha){
 
-  info.innerHTML = "<span class='ok'>✅ Reserva guardada correctamente</span>";
+info.innerHTML="Complete todos los campos";
+
+return;
+
 }
 
-// ================= MOSTRAR DISPONIBILIDAD OPTIMIZADO =================
-async function mostrarDisponibilidad() {
-  const fecha = document.getElementById("fechaConsulta").value;
-  const sala = document.getElementById("salaConsulta").value;
-  const info = document.getElementById("consultaInfo");
+if(!esDiaValido(fecha)){
 
-  if (!fecha) {
-    info.innerHTML = "⚠️ Seleccione una fecha";
-    return;
-  }
+info.innerHTML="⚠️ Solo se puede reservar de lunes a viernes";
 
-  info.innerHTML = "⏳ Cargando disponibilidad...";
+return;
 
-  // Trae TODAS las reservas del día y sala en una sola consulta
-  const query = await db.collection("reservas")
-    .where("fecha", "==", fecha)
-    .where("sala", "==", sala)
-    .get();
-
-  // Guarda ocupados en memoria
-  const ocupados = {};
-  query.forEach(doc => {
-    const r = doc.data();
-    ocupados[r.horario] = r.docente;
-  });
-
-  let html = `<h4>${sala} - ${fecha}</h4>`;
-
-  for (let h of horarios) {
-    if (ocupados[h]) {
-      html += `<p class="ocupado">${h} - OCUPADO (${ocupados[h]})</p>`;
-    } else {
-      html += `<p class="ok">${h} - LIBRE</p>`;
-    }
-  }
-
-  info.innerHTML = html;
 }
+
+const id=`${fecha}_${sala}_${horario}`;
+
+const ref=db.collection("reservas").doc(id);
+
+const snap=await ref.get();
+
+if(snap.exists){
+
+info.innerHTML="<span class='ocupado'>Horario ocupado</span>";
+
+return;
+
+}
+
+await ref.set({
+
+docente:docente,
+
+fecha:fecha,
+
+sala:sala,
+
+horario:horario,
+
+creado:new Date().toLocaleString()
+
+});
+
+info.innerHTML="<span class='ok'>Reserva guardada</span>";
+
+}
+
+
+
+async function mostrarDisponibilidad(){
+
+const fecha=document.getElementById("fechaConsulta").value;
+
+const sala=document.getElementById("salaConsulta").value;
+
+const info=document.getElementById("consultaInfo");
+
+if(!fecha){
+
+info.innerHTML="Seleccione una fecha";
+
+return;
+
+}
+
+info.innerHTML="Cargando...";
+
+const query=await db.collection("reservas")
+
+.where("fecha","==",fecha)
+
+.where("sala","==",sala)
+
+.get();
+
+const ocupados={};
+
+query.forEach(doc=>{
+
+const r=doc.data();
+
+ocupados[r.horario]=r.docente;
+
+});
+
+let html=`<h4>${sala} - ${fecha}</h4>`;
+
+horarios.forEach(h=>{
+
+if(ocupados[h]){
+
+html+=`<p class="ocupado">${h} - OCUPADO (${ocupados[h]})</p>`;
+
+}else{
+
+html+=`<p class="ok">${h} - LIBRE</p>`;
+
+}
+
+});
+
+info.innerHTML=html;
+
+}
+
 </script>
 
 </body>
