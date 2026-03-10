@@ -179,9 +179,15 @@ async function reservar() {
     return;
   }
 
-  if (!esDiaValido(fecha)) {
-    info.innerHTML = "⚠️ Solo se permiten reservas de lunes a viernes";
-    return;
+  function esDiaValido(fecha) {
+
+  const partes = fecha.split("-");
+  const fechaLocal = new Date(partes[0], partes[1] - 1, partes[2]);
+
+  const d = fechaLocal.getDay();
+
+  return d >= 1 && d <= 5;
+}
   }
 
   const id = `${fecha}_${sala}_${horario}`;
